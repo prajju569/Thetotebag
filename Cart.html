@@ -1,0 +1,1263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Your Bag — The Tote Bag Company</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rye&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+/* ══════════════════════════════════════
+   RESET & ROOT
+══════════════════════════════════════ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --cream:#F2EDE0; --cream-dark:#E8E0CE;
+  --brown:#3D1F0D; --brown-mid:#7B3F1A;
+  --gold:#C9973A;  --teal:#4A7C8E;
+  --olive:#5A6B3A; --terracotta:#C46A3C;
+}
+html{scroll-behavior:smooth}
+body{
+  background:var(--cream); color:var(--brown);
+  font-family:'Lora',Georgia,serif;
+  overflow-x:hidden; cursor:none; min-height:100vh;
+}
+body::before{
+  content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
+  background-image:
+    repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(61,31,13,.025) 2px,rgba(61,31,13,.025) 4px),
+    repeating-linear-gradient(90deg,transparent,transparent 2px,rgba(61,31,13,.025) 2px,rgba(61,31,13,.025) 4px);
+}
+
+/* ── CURSOR ── */
+.cursor-needle{
+  position:fixed; width:4px; height:26px;
+  background:linear-gradient(to bottom,var(--gold),var(--brown-mid));
+  border-radius:2px 2px 50% 50%; pointer-events:none; z-index:9999;
+  transform:translate(-2px,0) rotate(30deg);
+  box-shadow:0 2px 8px rgba(61,31,13,.3);
+}
+.cursor-needle::after{
+  content:''; position:absolute; top:3px; left:50%;
+  transform:translateX(-50%); width:2.5px; height:4px;
+  background:var(--cream); border-radius:50%;
+}
+.cursor-thread{
+  position:fixed; width:28px; height:28px;
+  border:2px dashed var(--terracotta); border-radius:50%;
+  pointer-events:none; z-index:9998; opacity:.55;
+  transition:width .3s,height .3s,opacity .3s,border-color .3s;
+}
+
+/* ── NAV ── */
+nav{
+  position:fixed; top:0; left:0; right:0; z-index:400;
+  padding:16px 48px;
+  display:flex; justify-content:space-between; align-items:center;
+  background:rgba(242,237,224,.95);
+  backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
+  border-bottom:2.5px dashed rgba(61,31,13,.22);
+}
+.nav-logo{
+  font-family:'Rye',serif; font-size:16px;
+  color:var(--brown); text-decoration:none;
+  letter-spacing:1px; line-height:1.3; position:relative; z-index:401;
+}
+.nav-links{display:flex; gap:36px; list-style:none; align-items:center;}
+.nav-links a{
+  font-family:'Lora',serif; font-size:13px; color:var(--brown);
+  text-decoration:none; letter-spacing:.5px;
+  position:relative; padding-bottom:4px;
+}
+.nav-links a::after{
+  content:''; position:absolute; bottom:0; left:0;
+  width:0; height:0; border-bottom:2px dashed var(--terracotta); transition:width .35s;
+}
+.nav-links a:hover::after{width:100%}
+/* Cart icon in nav */
+.nav-cart-btn{
+  position:relative; background:var(--brown);
+  border:2px solid var(--brown);
+  outline:2px dashed rgba(242,237,224,.3); outline-offset:3px;
+  padding:8px 20px;
+  font-family:'Rye',serif; font-size:11px;
+  letter-spacing:1.5px; color:var(--cream);
+  cursor:none; transition:background .2s;
+  display:flex; align-items:center; gap:8px;
+}
+.nav-cart-btn:hover{background:var(--terracotta)}
+.cart-badge{
+  display:inline-flex; align-items:center; justify-content:center;
+  width:18px; height:18px; border-radius:50%;
+  background:var(--gold); color:var(--brown);
+  font-family:'Rye',serif; font-size:9px;
+  font-weight:700; line-height:1;
+  transition:transform .3s cubic-bezier(.23,1,.32,1);
+}
+.cart-badge.bump{animation:badgeBump .4s cubic-bezier(.23,1,.32,1)}
+@keyframes badgeBump{
+  0%{transform:scale(1)} 40%{transform:scale(1.5) rotate(-10deg)} 100%{transform:scale(1)}
+}
+/* Hamburger */
+.hamburger{
+  display:none; flex-direction:column; justify-content:center; gap:5px;
+  width:38px; height:38px; background:none;
+  border:2px dashed var(--brown); padding:8px 7px;
+  cursor:pointer; z-index:401; position:relative;
+  transition:border-color .2s,background .2s;
+}
+.hamburger span{
+  display:block; width:100%; height:2px; background:var(--brown);
+  border-radius:1px; transition:transform .35s ease,opacity .25s ease,width .25s ease;
+  transform-origin:center;
+}
+.hamburger.open{background:var(--brown); border-style:solid}
+.hamburger.open span{background:var(--cream)}
+.hamburger.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.hamburger.open span:nth-child(2){opacity:0; width:0}
+.hamburger.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+/* Mobile drawer */
+.mobile-drawer{
+  display:none; position:fixed; top:0; left:0; right:0; bottom:0; z-index:399;
+  background:var(--cream); flex-direction:column; align-items:center; justify-content:center;
+  transform:translateX(100%); transition:transform .4s cubic-bezier(0.23,1,0.32,1); overflow:hidden;
+}
+.mobile-drawer::before{
+  content:''; position:absolute; inset:20px;
+  border:2.5px dashed rgba(61,31,13,.15); pointer-events:none; z-index:0;
+}
+.mobile-drawer.open{transform:translateX(0)}
+.mobile-drawer ul{
+  list-style:none; display:flex; flex-direction:column;
+  align-items:stretch; width:100vw; position:relative; z-index:2;
+}
+.mobile-drawer ul li{border-bottom:2px dashed rgba(61,31,13,.15)}
+.mobile-drawer ul li:first-child{border-top:2px dashed rgba(61,31,13,.15)}
+.mobile-drawer ul a{
+  display:block; font-family:'Rye',serif;
+  font-size:clamp(22px,7vw,32px); letter-spacing:2px;
+  color:var(--brown); text-decoration:none;
+  text-align:center; padding:24px 32px;
+  transition:background .2s,color .2s;
+}
+.mobile-drawer ul a:active,.mobile-drawer ul a:hover{background:var(--brown); color:var(--cream)}
+.drawer-tagline{
+  position:relative; z-index:2; margin-top:48px;
+  font-family:'Lora',serif; font-size:12px; font-style:italic;
+  color:var(--brown-mid); opacity:.45; letter-spacing:2px; text-transform:uppercase;
+}
+@media(max-width:768px){
+  nav{padding:14px 20px}
+  .nav-links{display:none!important}
+  .hamburger{display:flex}
+  .mobile-drawer{display:flex}
+  body.no-scroll{overflow:hidden}
+}
+
+/* ══════════════════════════════════════
+   PAGE LAYOUT — two columns
+══════════════════════════════════════ */
+.page-wrap{
+  position:relative; z-index:1;
+  padding:110px 60px 80px;
+  min-height:100vh;
+  display:grid;
+  grid-template-columns:1fr 380px;
+  gap:48px;
+  max-width:1200px; margin:0 auto;
+}
+.cart-col{}
+.summary-col{}
+
+/* ── PAGE HEADING ── */
+.page-heading{
+  display:flex; align-items:baseline; gap:16px;
+  margin-bottom:40px;
+}
+.page-heading h1{
+  font-family:'Rye',serif; font-size:clamp(32px,5vw,52px);
+  color:var(--brown); letter-spacing:2px; line-height:1;
+}
+.page-heading .item-count-label{
+  font-family:'Lora',serif; font-size:14px;
+  font-style:italic; color:var(--brown-mid); opacity:.6;
+}
+
+/* ══════════════════════════════════════
+   CART ITEMS
+══════════════════════════════════════ */
+.cart-list{display:flex; flex-direction:column; gap:0}
+
+/* Single cart item */
+.cart-item{
+  display:grid;
+  grid-template-columns:80px 1fr auto;
+  gap:0 20px; align-items:start;
+  padding:24px 0;
+  border-bottom:2px dashed rgba(61,31,13,.15);
+  position:relative;
+  animation:itemSlideIn .45s cubic-bezier(.23,1,.32,1) both;
+}
+.cart-item:first-child{border-top:2px dashed rgba(61,31,13,.15)}
+@keyframes itemSlideIn{
+  from{opacity:0; transform:translateX(-20px)}
+  to{opacity:1; transform:none}
+}
+
+/* Bag thumbnail */
+.item-thumb{
+  width:80px; height:96px;
+  display:flex; align-items:center; justify-content:center;
+  border:2px dashed rgba(61,31,13,.2);
+  background:var(--cream-dark);
+  position:relative; overflow:hidden;
+}
+.item-thumb svg{width:60px; height:72px}
+
+/* Item info */
+.item-info{padding-top:4px}
+.item-name{
+  font-family:'Rye',serif; font-size:13px;
+  color:var(--brown); letter-spacing:.5px; line-height:1.4;
+  margin-bottom:5px;
+}
+.item-variant{
+  font-family:'Lora',serif; font-size:11px;
+  font-style:italic; color:var(--brown-mid); margin-bottom:14px;
+}
+/* Qty controls */
+.qty-row{display:flex; align-items:center; gap:0}
+.qty-btn{
+  width:28px; height:28px; background:none;
+  border:2px dashed var(--brown-mid); color:var(--brown);
+  font-size:16px; line-height:1; cursor:none;
+  display:flex; align-items:center; justify-content:center;
+  transition:background .2s, border-color .2s;
+  flex-shrink:0;
+}
+.qty-btn:hover{background:var(--brown); color:var(--cream); border-style:solid}
+.qty-display{
+  width:36px; text-align:center;
+  font-family:'Rye',serif; font-size:14px; color:var(--brown);
+  border-top:2px dashed var(--brown-mid); border-bottom:2px dashed var(--brown-mid);
+  height:28px; display:flex; align-items:center; justify-content:center;
+}
+
+/* Item price + remove */
+.item-right{text-align:right; padding-top:4px}
+.item-price{
+  font-family:'Rye',serif; font-size:18px;
+  color:var(--brown); display:block; margin-bottom:10px;
+}
+.item-remove{
+  font-family:'Lora',serif; font-size:10px;
+  letter-spacing:1px; font-style:italic;
+  color:var(--brown-mid); opacity:.4;
+  background:none; border:none; cursor:none;
+  text-decoration:underline;
+  text-underline-offset:3px;
+  transition:color .2s, opacity .2s;
+}
+.item-remove:hover{color:var(--terracotta); opacity:1}
+
+/* Removing animation */
+.cart-item.removing{
+  animation:itemFlyOut .5s cubic-bezier(.55,.055,.675,.19) forwards;
+}
+@keyframes itemFlyOut{
+  0%{opacity:1; transform:translateX(0) scale(1)}
+  100%{opacity:0; transform:translateX(120px) scale(.8); height:0; padding:0; margin:0}
+}
+
+/* ── EMPTY CART ── */
+.empty-cart{
+  display:none; text-align:center;
+  padding:80px 24px;
+}
+.empty-cart.show{display:block}
+.empty-cart-icon{font-size:64px; margin-bottom:20px; display:block}
+.empty-cart h2{
+  font-family:'Rye',serif; font-size:26px;
+  color:var(--brown); letter-spacing:1px; margin-bottom:10px;
+}
+.empty-cart p{
+  font-family:'Lora',serif; font-style:italic;
+  color:var(--brown-mid); margin-bottom:32px; font-size:14px; line-height:1.8;
+}
+.btn-shop{
+  display:inline-block;
+  font-family:'Rye',serif; font-size:13px; letter-spacing:2px;
+  color:var(--cream); background:var(--brown);
+  border:3px solid var(--brown);
+  outline:2px dashed rgba(242,237,224,.3); outline-offset:4px;
+  padding:16px 36px; text-decoration:none;
+  transition:background .2s, transform .2s;
+}
+.btn-shop:hover{background:var(--terracotta); transform:translateY(-2px)}
+
+/* ══════════════════════════════════════
+   COUPON SECTION
+══════════════════════════════════════ */
+.coupon-section{
+  margin-top:40px; position:relative;
+}
+.section-label{
+  font-family:'Rye',serif; font-size:11px;
+  letter-spacing:2px; color:var(--brown);
+  text-transform:uppercase; margin-bottom:12px;
+  display:flex; align-items:center; gap:10px;
+}
+.section-label::after{
+  content:''; flex:1; height:1.5px;
+  background:repeating-linear-gradient(90deg,var(--gold) 0,var(--gold) 6px,transparent 6px,transparent 12px);
+  opacity:.4;
+}
+.coupon-row{display:flex; gap:0}
+.coupon-input{
+  flex:1; border:2.5px solid var(--brown);
+  background:var(--cream-dark);
+  padding:12px 16px;
+  font-family:'Lora',serif; font-size:14px;
+  font-style:italic; color:var(--brown);
+  outline:none; letter-spacing:1px;
+  text-transform:uppercase;
+  transition:border-color .2s, background .2s;
+}
+.coupon-input:focus{background:#fff; border-color:var(--gold)}
+.coupon-input::placeholder{text-transform:none; opacity:.4; letter-spacing:0}
+.coupon-btn{
+  font-family:'Rye',serif; font-size:11px;
+  letter-spacing:2px; color:var(--cream);
+  background:var(--brown); border:2.5px solid var(--brown);
+  padding:12px 24px; cursor:none;
+  transition:background .2s; white-space:nowrap; flex-shrink:0;
+}
+.coupon-btn:hover{background:var(--terracotta)}
+
+/* Coupon result message */
+.coupon-msg{
+  margin-top:10px; min-height:24px;
+  font-family:'Lora',serif; font-size:12px; font-style:italic;
+  transition:all .3s;
+}
+.coupon-msg.ok{color:var(--olive)}
+.coupon-msg.err{color:var(--terracotta)}
+
+/* Applied coupon tag */
+.coupon-tag{
+  display:inline-flex; align-items:center; gap:10px;
+  background:var(--olive);
+  border:2px solid var(--olive);
+  outline:2px dashed rgba(255,255,255,.25); outline-offset:3px;
+  padding:8px 16px; margin-top:10px;
+  font-family:'Rye',serif; font-size:11px;
+  letter-spacing:1px; color:var(--cream);
+  animation:tagStamp .4s cubic-bezier(.23,1,.32,1) both;
+}
+@keyframes tagStamp{
+  0%{transform:scale(1.4) rotate(-3deg); opacity:0}
+  60%{transform:scale(.95) rotate(1deg)}
+  100%{transform:scale(1) rotate(0); opacity:1}
+}
+.coupon-tag-remove{
+  background:none; border:none; color:rgba(242,237,224,.6);
+  cursor:none; font-size:14px; line-height:1;
+  transition:color .2s; padding:0;
+}
+.coupon-tag-remove:hover{color:var(--cream)}
+
+/* ── STAMP ANIMATION ── */
+.stamp-overlay{
+  position:fixed; inset:0; z-index:800;
+  display:flex; align-items:center; justify-content:center;
+  pointer-events:none; opacity:0;
+}
+.stamp-seal{
+  width:180px; height:180px;
+  border-radius:50%;
+  background:radial-gradient(circle at 40% 40%, var(--olive), #2d3a1a);
+  border:5px solid #2d3a1a;
+  outline:4px dashed rgba(255,255,255,.35); outline-offset:6px;
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  transform:scale(3) rotate(-20deg);
+  box-shadow:0 0 0 0 rgba(90,107,58,.6);
+}
+.stamp-seal-inner{text-align:center}
+.stamp-seal-text{
+  font-family:'Rye',serif; font-size:22px;
+  color:#c5d99a; letter-spacing:2px; display:block;
+}
+.stamp-seal-sub{
+  font-family:'Lora',serif; font-size:10px;
+  letter-spacing:3px; color:rgba(197,217,154,.7);
+  text-transform:uppercase; display:block; margin-top:4px;
+}
+.stamp-overlay.stamping{
+  opacity:1;
+  animation:stampIn .7s cubic-bezier(.23,1,.32,1) forwards;
+}
+@keyframes stampIn{
+  0%{opacity:1}
+  15%{opacity:1}
+  20%{opacity:1}
+  80%{opacity:1}
+  100%{opacity:0}
+}
+.stamp-seal.stamping{
+  animation:sealStamp .7s cubic-bezier(.23,1,.32,1) forwards;
+}
+@keyframes sealStamp{
+  0%  {transform:scale(3) rotate(-20deg); opacity:0}
+  30% {transform:scale(1) rotate(0deg); opacity:1; box-shadow:0 0 0 30px rgba(90,107,58,.2)}
+  55% {transform:scale(1.05) rotate(2deg)}
+  70% {transform:scale(1) rotate(0); box-shadow:0 0 0 60px rgba(90,107,58,.0)}
+  100%{transform:scale(.8) rotate(-5deg); opacity:0}
+}
+
+/* ══════════════════════════════════════
+   GIFT WRAP SECTION
+══════════════════════════════════════ */
+.gift-section{margin-top:32px}
+
+.gift-toggle{
+  width:100%; display:flex; align-items:center;
+  justify-content:space-between; gap:16px;
+  padding:18px 20px;
+  background:var(--cream-dark);
+  border:2.5px dashed rgba(61,31,13,.25);
+  cursor:none; text-align:left;
+  transition:background .2s, border-color .2s;
+  position:relative; overflow:hidden;
+}
+.gift-toggle:hover{background:var(--cream); border-color:var(--gold)}
+.gift-toggle-left{display:flex; align-items:center; gap:14px}
+.gift-icon-wrap{
+  font-size:28px; position:relative;
+  transition:transform .4s cubic-bezier(.23,1,.32,1);
+}
+.gift-toggle:hover .gift-icon-wrap{transform:scale(1.2) rotate(-10deg)}
+.gift-toggle-text strong{
+  font-family:'Rye',serif; font-size:13px;
+  color:var(--brown); letter-spacing:.5px; display:block;
+}
+.gift-toggle-text span{
+  font-family:'Lora',serif; font-size:11px;
+  font-style:italic; color:var(--brown-mid); display:block; margin-top:2px;
+}
+.gift-price-tag{
+  font-family:'Rye',serif; font-size:13px;
+  color:var(--terracotta); flex-shrink:0;
+}
+/* Active state */
+.gift-toggle.active{
+  background:var(--brown); border-color:var(--brown); border-style:solid;
+}
+.gift-toggle.active .gift-toggle-text strong,
+.gift-toggle.active .gift-price-tag{color:var(--cream)}
+.gift-toggle.active .gift-toggle-text span{color:rgba(242,237,224,.6)}
+
+/* Gift form panel — slides open */
+.gift-panel{
+  max-height:0; overflow:hidden;
+  transition:max-height .5s cubic-bezier(.23,1,.32,1);
+  border:2.5px solid transparent;
+  border-top:none;
+}
+.gift-panel.open{
+  max-height:600px;
+  border-color:var(--brown);
+  border-style:solid;
+}
+.gift-panel-inner{
+  padding:28px 24px;
+  background:var(--cream);
+  position:relative;
+}
+
+/* Ribbon animation on panel open */
+.gift-ribbon{
+  position:absolute; top:0; left:0; right:0;
+  height:4px;
+  background:repeating-linear-gradient(90deg,var(--terracotta) 0,var(--terracotta) 16px,transparent 16px,transparent 24px);
+  transform-origin:left center;
+  transform:scaleX(0);
+  transition:transform .6s cubic-bezier(.23,1,.32,1) .1s;
+}
+.gift-panel.open .gift-ribbon{transform:scaleX(1)}
+
+/* The "card" visual inside */
+.gift-card-preview{
+  background:#fff;
+  border:2px solid var(--brown);
+  border-radius:0;
+  padding:20px 20px 16px;
+  margin-bottom:20px;
+  position:relative;
+  box-shadow:3px 4px 0 rgba(61,31,13,.12);
+  transform:rotate(-.5deg);
+  transition:transform .3s;
+}
+.gift-card-preview:hover{transform:rotate(0)}
+.gift-card-preview::before{
+  content:'💌'; position:absolute; top:-14px; left:50%;
+  transform:translateX(-50%); font-size:22px;
+  filter:drop-shadow(0 2px 4px rgba(61,31,13,.2));
+}
+.gift-card-to{
+  font-family:'Rye',serif; font-size:11px;
+  letter-spacing:2px; color:var(--brown-mid);
+  text-transform:uppercase; margin-bottom:6px; display:block;
+}
+.gift-card-message{
+  font-family:'Playfair Display',serif; font-style:italic;
+  font-size:15px; color:var(--brown); line-height:1.7;
+  min-height:40px;
+}
+.gift-card-from{
+  font-family:'Lora',serif; font-size:11px;
+  color:var(--brown-mid); font-style:italic;
+  text-align:right; margin-top:12px; display:block;
+}
+
+/* Gift form fields */
+.gift-form{display:flex; flex-direction:column; gap:14px}
+.gift-field{display:flex; flex-direction:column; gap:6px}
+.gift-field label{
+  font-family:'Rye',serif; font-size:10px;
+  letter-spacing:1.5px; color:var(--brown); text-transform:uppercase;
+}
+.gift-field input,.gift-field textarea{
+  border:2px solid var(--brown);
+  outline:1.5px dashed rgba(61,31,13,.2); outline-offset:3px;
+  background:var(--cream-dark); padding:10px 14px;
+  font-family:'Lora',serif; font-size:13px; font-style:italic;
+  color:var(--brown); resize:none;
+  transition:outline-color .2s, background .2s;
+}
+.gift-field input:focus,.gift-field textarea:focus{
+  outline-color:var(--gold); background:#fff;
+}
+.gift-field input::placeholder,.gift-field textarea::placeholder{
+  color:rgba(61,31,13,.3);
+}
+
+/* ══════════════════════════════════════
+   ORDER SUMMARY
+══════════════════════════════════════ */
+.summary-card{
+  background:var(--cream-dark);
+  border:3px solid var(--brown);
+  outline:2.5px dashed rgba(61,31,13,.22); outline-offset:6px;
+  padding:36px 32px;
+  position:sticky; top:88px;
+  box-shadow:6px 8px 0 rgba(61,31,13,.1);
+}
+.summary-card-badge{
+  position:absolute; top:-14px; left:24px;
+  font-family:'Rye',serif; font-size:9px;
+  letter-spacing:2px; color:var(--cream);
+  background:var(--brown); padding:5px 16px;
+  border:2px solid var(--brown);
+}
+.summary-title{
+  font-family:'Rye',serif; font-size:20px;
+  color:var(--brown); margin-bottom:28px; letter-spacing:1px;
+}
+
+/* Line items */
+.summary-lines{display:flex; flex-direction:column; gap:12px; margin-bottom:20px}
+.summary-line{
+  display:flex; justify-content:space-between;
+  font-family:'Lora',serif; font-size:13px; color:var(--brown);
+}
+.summary-line .label{font-style:italic; color:var(--brown-mid)}
+.summary-line .value{font-weight:600}
+.summary-line.discount .value{color:var(--olive)}
+.summary-line.shipping .value{color:var(--teal)}
+.summary-line.gift .value{color:var(--terracotta)}
+
+/* Divider */
+.summary-divider{
+  height:2px; margin:16px 0;
+  background:repeating-linear-gradient(90deg,var(--brown-mid) 0,var(--brown-mid) 6px,transparent 6px,transparent 12px);
+  opacity:.25;
+}
+
+/* Total */
+.summary-total{
+  display:flex; justify-content:space-between; align-items:baseline;
+}
+.summary-total .total-label{
+  font-family:'Rye',serif; font-size:16px; color:var(--brown); letter-spacing:1px;
+}
+.summary-total .total-value{
+  font-family:'Rye',serif; font-size:28px; color:var(--brown);
+  transition:transform .3s cubic-bezier(.23,1,.32,1);
+}
+.summary-total .total-value.update{animation:totalPop .4s cubic-bezier(.23,1,.32,1)}
+@keyframes totalPop{
+  0%{transform:scale(1)}
+  40%{transform:scale(1.15); color:var(--terracotta)}
+  100%{transform:scale(1)}
+}
+
+/* Free shipping bar */
+.shipping-bar-wrap{margin:16px 0}
+.shipping-bar-label{
+  font-family:'Lora',serif; font-size:11px; font-style:italic;
+  color:var(--brown-mid); margin-bottom:7px; display:block;
+}
+.shipping-bar{
+  height:8px; background:var(--cream);
+  border:2px solid var(--brown);
+  outline:1.5px dashed rgba(61,31,13,.2); outline-offset:2px;
+  position:relative;
+}
+.shipping-bar-fill{
+  height:100%;
+  background:repeating-linear-gradient(90deg,var(--teal) 0,var(--teal) 8px,transparent 8px,transparent 14px);
+  transition:width .6s cubic-bezier(.23,1,.32,1);
+  position:relative;
+}
+.shipping-bar-fill::after{
+  content:'🧵';
+  position:absolute; right:-10px; top:50%;
+  transform:translateY(-50%); font-size:12px;
+}
+
+/* Checkout button */
+.checkout-btn{
+  width:100%; margin-top:24px;
+  font-family:'Rye',serif; font-size:14px;
+  letter-spacing:2px; color:var(--cream);
+  background:var(--brown);
+  border:3px solid var(--brown);
+  outline:2.5px dashed rgba(242,237,224,.25); outline-offset:4px;
+  padding:20px 32px; cursor:none;
+  transition:background .25s, transform .2s;
+  position:relative; overflow:hidden;
+}
+.checkout-btn:hover{background:var(--terracotta); transform:translateY(-2px)}
+/* Needle threading animation on hover */
+.checkout-btn::before{
+  content:'';
+  position:absolute; top:0; left:-100%;
+  width:100%; height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.08),transparent);
+  transition:left .5s ease;
+}
+.checkout-btn:hover::before{left:100%}
+.checkout-btn:disabled{background:var(--brown-mid); cursor:not-allowed; transform:none}
+
+/* Continue shopping */
+.continue-link{
+  display:block; text-align:center; margin-top:14px;
+  font-family:'Lora',serif; font-size:12px; font-style:italic;
+  color:var(--brown-mid); text-decoration:none; letter-spacing:.5px;
+  border-bottom:1.5px dashed rgba(61,31,13,.2); padding-bottom:3px;
+  width:fit-content; margin-left:auto; margin-right:auto;
+  transition:color .2s, border-color .2s;
+}
+.continue-link:hover{color:var(--terracotta); border-color:var(--terracotta)}
+
+/* Trust badges */
+.trust-badges{
+  display:flex; gap:12px; flex-wrap:wrap;
+  margin-top:24px; padding-top:20px;
+  border-top:2px dashed rgba(61,31,13,.15);
+}
+.trust-badge{
+  flex:1; min-width:80px;
+  text-align:center;
+  font-family:'Lora',serif; font-size:9px;
+  font-style:italic; color:var(--brown-mid);
+  opacity:.7; line-height:1.5;
+}
+.trust-badge span{font-size:18px; display:block; margin-bottom:4px}
+
+/* ══════════════════════════════════════
+   FLYING BAG ANIMATION
+══════════════════════════════════════ */
+.flying-bag{
+  position:fixed; z-index:9000;
+  pointer-events:none;
+  font-size:32px;
+  opacity:1;
+  transform-origin:center;
+}
+@keyframes flyToCart{
+  0%  {transform:scale(1) rotate(0deg); opacity:1}
+  30% {transform:scale(1.2) rotate(-10deg)}
+  100%{transform:scale(.3) rotate(20deg) translate(var(--dx),var(--dy)); opacity:0}
+}
+
+/* ══════════════════════════════════════
+   THREAD TRAIL CANVAS
+══════════════════════════════════════ */
+#threadTrailCanvas{
+  position:fixed; inset:0; pointer-events:none;
+  z-index:8999; opacity:0;
+  transition:opacity .3s;
+}
+#threadTrailCanvas.visible{opacity:1}
+
+/* ══════════════════════════════════════
+   RESPONSIVE
+══════════════════════════════════════ */
+@media(max-width:1024px){
+  .page-wrap{grid-template-columns:1fr; padding:100px 32px 80px}
+  .summary-card{position:static; margin-top:32px}
+}
+@media(max-width:600px){
+  .page-wrap{padding:90px 16px 60px}
+  .cart-item{grid-template-columns:64px 1fr auto; gap:0 14px; padding:18px 0}
+  .item-thumb{width:64px; height:76px}
+  .item-thumb svg{width:48px; height:58px}
+  .summary-card{padding:28px 20px}
+  body{cursor:auto}
+  .cursor-needle,.cursor-thread{display:none}
+}
+</style>
+</head>
+<body>
+
+<div class="cursor-needle" id="needle"></div>
+<div class="cursor-thread" id="threadCursor"></div>
+<canvas id="threadTrailCanvas"></canvas>
+
+<!-- Flying bag element (reused) -->
+<div class="flying-bag" id="flyingBag" style="display:none">🛍️</div>
+
+<!-- Stamp overlay -->
+<div class="stamp-overlay" id="stampOverlay">
+  <div class="stamp-seal" id="stampSeal">
+    <div class="stamp-seal-inner">
+      <span class="stamp-seal-text">SAVED!</span>
+      <span class="stamp-seal-sub">Code Applied ✦</span>
+    </div>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-logo">The Tote<br>Bag Co.</a>
+  <ul class="nav-links">
+    <li><a href="shop.html">Shop</a></li>
+    <li><a href="index.html#story">Our Story</a></li>
+    <li><a href="waitlist.html">Waitlist</a></li>
+    <li>
+      <button class="nav-cart-btn" onclick="window.location='cart.html'">
+        🧵 Your Bag
+        <span class="cart-badge" id="navCartBadge">0</span>
+      </button>
+    </li>
+  </ul>
+  <button class="hamburger" id="hamburger" aria-label="Open menu" onclick="toggleDrawer()">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<div class="mobile-drawer" id="mobileDrawer">
+  <ul>
+    <li><a href="shop.html" onclick="closeDrawer()">Shop</a></li>
+    <li><a href="index.html#story" onclick="closeDrawer()">Our Story</a></li>
+    <li><a href="waitlist.html" onclick="closeDrawer()">Waitlist</a></li>
+    <li><a href="cart.html" onclick="closeDrawer()">🧵 Your Cart</a></li>
+  </ul>
+  <div class="drawer-tagline">✦ Stitch by Stitch ✦</div>
+</div>
+
+<!-- PAGE -->
+<div class="page-wrap">
+
+  <!-- LEFT — Cart items -->
+  <div class="cart-col">
+
+    <div class="page-heading">
+      <h1>Your Bag.</h1>
+      <span class="item-count-label" id="itemCountLabel">0 items</span>
+    </div>
+
+    <!-- Cart list -->
+    <div class="cart-list" id="cartList"></div>
+
+    <!-- Empty state -->
+    <div class="empty-cart" id="emptyCart">
+      <span class="empty-cart-icon">🛍️</span>
+      <h2>Your bag is empty.</h2>
+      <p>It's lonely in here.<br>Go find a bag that speaks your soul.</p>
+      <a href="shop.html" class="btn-shop">Browse the Collection ✦</a>
+    </div>
+
+    <!-- COUPON -->
+    <div class="coupon-section" id="couponSection" style="display:none">
+      <div class="section-label">Got a code?</div>
+      <div id="couponInputArea">
+        <div class="coupon-row">
+          <input type="text" class="coupon-input" id="couponInput"
+            placeholder="Enter coupon code..." maxlength="20"
+            onkeydown="if(event.key==='Enter') applyCoupon()">
+          <button class="coupon-btn" onclick="applyCoupon()">Apply ✦</button>
+        </div>
+        <div class="coupon-msg" id="couponMsg"></div>
+      </div>
+      <div id="couponTagArea" style="display:none">
+        <div class="coupon-tag">
+          <span id="couponTagText"></span>
+          <button class="coupon-tag-remove" onclick="removeCoupon()" title="Remove">✕</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- GIFT WRAP -->
+    <div class="gift-section" id="giftSection" style="display:none">
+      <div class="section-label">Make it a gift?</div>
+      <button class="gift-toggle" id="giftToggle" onclick="toggleGift()">
+        <div class="gift-toggle-left">
+          <div class="gift-icon-wrap" id="giftIconWrap">🎁</div>
+          <div class="gift-toggle-text">
+            <strong>Add Gift Wrapping</strong>
+            <span>Ribbon, tissue paper & handwritten card</span>
+          </div>
+        </div>
+        <div class="gift-price-tag" id="giftPriceTag">+₹49</div>
+      </button>
+
+      <div class="gift-panel" id="giftPanel">
+        <div class="gift-panel-inner">
+          <div class="gift-ribbon"></div>
+
+          <!-- Live card preview -->
+          <div class="gift-card-preview">
+            <span class="gift-card-to" id="previewTo">To: ...</span>
+            <div class="gift-card-message" id="previewMsg">
+              <em style="opacity:.4">Your message will appear here ✦</em>
+            </div>
+            <span class="gift-card-from" id="previewFrom">From: ...</span>
+          </div>
+
+          <!-- Form -->
+          <div class="gift-form">
+            <div class="gift-field">
+              <label>To</label>
+              <input type="text" id="giftTo" placeholder="Who's the lucky one?"
+                oninput="updateGiftPreview()">
+            </div>
+            <div class="gift-field">
+              <label>From</label>
+              <input type="text" id="giftFrom" placeholder="Your name"
+                oninput="updateGiftPreview()">
+            </div>
+            <div class="gift-field">
+              <label>Your Message</label>
+              <textarea id="giftMsg" rows="3"
+                placeholder="Write something from the heart... ✦"
+                maxlength="160" oninput="updateGiftPreview()"></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RIGHT — Order summary -->
+  <div class="summary-col">
+    <div class="summary-card" style="position:relative">
+      <div class="summary-card-badge">Order Summary</div>
+      <div class="summary-title">The Total. ✦</div>
+
+      <!-- Line items -->
+      <div class="summary-lines" id="summaryLines">
+        <div class="summary-line">
+          <span class="label">Subtotal</span>
+          <span class="value" id="sumSubtotal">₹0</span>
+        </div>
+        <div class="summary-line discount" id="sumDiscountRow" style="display:none">
+          <span class="label" id="sumDiscountLabel">Discount</span>
+          <span class="value" id="sumDiscount">-₹0</span>
+        </div>
+        <div class="summary-line gift" id="sumGiftRow" style="display:none">
+          <span class="label">Gift Wrapping</span>
+          <span class="value" id="sumGift">+₹49</span>
+        </div>
+        <div class="summary-line shipping" id="sumShippingRow">
+          <span class="label">Shipping</span>
+          <span class="value" id="sumShipping">₹80</span>
+        </div>
+      </div>
+
+      <!-- Free shipping progress -->
+      <div class="shipping-bar-wrap" id="shippingBarWrap">
+        <span class="shipping-bar-label" id="shippingBarLabel">Loading...</span>
+        <div class="shipping-bar">
+          <div class="shipping-bar-fill" id="shippingBarFill" style="width:0%"></div>
+        </div>
+      </div>
+
+      <div class="summary-divider"></div>
+
+      <div class="summary-total">
+        <span class="total-label">Total</span>
+        <span class="total-value" id="sumTotal">₹0</span>
+      </div>
+
+      <button class="checkout-btn" id="checkoutBtn" onclick="handleCheckout()" disabled>
+        Proceed to Checkout ✦
+      </button>
+      <a href="shop.html" class="continue-link">← Continue shopping</a>
+
+      <!-- Trust badges -->
+      <div class="trust-badges">
+        <div class="trust-badge"><span>🔒</span>Secure checkout</div>
+        <div class="trust-badge"><span>🇮🇳</span>Made in India</div>
+        <div class="trust-badge"><span>💌</span>Ships in 3–5 days</div>
+        <div class="trust-badge"><span>🧵</span>Handstitched</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="products.js"></script>
+<script src="cart.js"></script>
+<script>
+/* ════════════════════════════════════
+   CURSOR
+════════════════════════════════════ */
+const needleEl = document.getElementById('needle');
+const threadEl = document.getElementById('threadCursor');
+let mx=0,my=0,tx=0,ty=0;
+document.addEventListener('mousemove',e=>{
+  mx=e.clientX; my=e.clientY;
+  needleEl.style.transform=`translate(${mx-2}px,${my}px) rotate(30deg)`;
+});
+(function loop(){
+  tx+=(mx-tx)*.1; ty+=(my-ty)*.1;
+  threadEl.style.transform=`translate(${tx-14}px,${ty-14}px)`;
+  requestAnimationFrame(loop);
+})();
+document.querySelectorAll('a,button,input,textarea').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{threadEl.style.width='50px';threadEl.style.height='50px';threadEl.style.borderColor='var(--gold)';threadEl.style.opacity='.8'});
+  el.addEventListener('mouseleave',()=>{threadEl.style.width='28px';threadEl.style.height='28px';threadEl.style.borderColor='var(--terracotta)';threadEl.style.opacity='.55'});
+});
+
+/* ════════════════════════════════════
+   HAMBURGER
+════════════════════════════════════ */
+function toggleDrawer(){
+  const d=document.getElementById('mobileDrawer'),b=document.getElementById('hamburger');
+  const open=d.classList.contains('open');
+  d.classList.toggle('open',!open);b.classList.toggle('open',!open);
+  document.body.classList.toggle('no-scroll',!open);
+}
+function closeDrawer(){
+  document.getElementById('mobileDrawer').classList.remove('open');
+  document.getElementById('hamburger').classList.remove('open');
+  document.body.classList.remove('no-scroll');
+}
+
+/* ════════════════════════════════════
+   RENDER BAG THUMBNAIL (mini SVG)
+════════════════════════════════════ */
+function renderMiniSVG(item) {
+  const dark = ['#7B3F1A','#3D1F0D','#0D0D0D','#4A7C8E','#5A6B3A','#C46A3C','#C9973A'];
+  const tc = dark.includes(item.canvasColor) ? '#F2EDE0' : '#3D1F0D';
+  const is = dark.includes(item.canvasColor) ? 'rgba(255,255,255,0.2)' : '#3D1F0D';
+  const io = dark.includes(item.canvasColor) ? '1' : '0.3';
+  const l1 = item.line1 ? `<text x="40" y="64" font-family="Georgia" font-size="7" fill="${tc}" text-anchor="middle" font-style="italic">${item.line1}</text>` : '';
+  const l2 = item.line2 ? `<text x="40" y="74" font-family="Georgia" font-size="7" font-weight="700" fill="${tc}" text-anchor="middle">${item.line2}</text>` : '';
+  return `<svg viewBox="0 0 80 96" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M22 26 Q22 8 30 8 Q38 8 38 26" stroke="#3D1F0D" stroke-width="3" fill="none" stroke-linecap="round" stroke-dasharray="4 2"/>
+    <path d="M42 26 Q42 12 50 12 Q58 12 58 26" stroke="#3D1F0D" stroke-width="3" fill="none" stroke-linecap="round" stroke-dasharray="4 2"/>
+    <rect x="12" y="26" width="56" height="64" rx="3" fill="${item.canvasColor}" stroke="#3D1F0D" stroke-width="2"/>
+    <rect x="16" y="30" width="48" height="56" rx="2" fill="none" stroke="${is}" stroke-width="1" stroke-dasharray="4 3" opacity="${io}"/>
+    ${l1}${l2}
+  </svg>`;
+}
+
+/* ════════════════════════════════════
+   RENDER CART
+════════════════════════════════════ */
+function renderCart() {
+  const list       = document.getElementById('cartList');
+  const emptyCart  = document.getElementById('emptyCart');
+  const couponSec  = document.getElementById('couponSection');
+  const giftSec    = document.getElementById('giftSection');
+  const checkoutBtn= document.getElementById('checkoutBtn');
+  const countLabel = document.getElementById('itemCountLabel');
+  const navBadge   = document.getElementById('navCartBadge');
+
+  list.innerHTML = '';
+  const items = CART.items;
+  const count = CART.itemCount();
+
+  countLabel.textContent = `${count} item${count !== 1 ? 's' : ''}`;
+  navBadge.textContent   = count;
+
+  if (items.length === 0) {
+    emptyCart.classList.add('show');
+    couponSec.style.display  = 'none';
+    giftSec.style.display    = 'none';
+    checkoutBtn.disabled     = true;
+  } else {
+    emptyCart.classList.remove('show');
+    couponSec.style.display  = '';
+    giftSec.style.display    = '';
+    checkoutBtn.disabled     = false;
+
+    items.forEach((item, idx) => {
+      const row = document.createElement('div');
+      row.className = 'cart-item';
+      row.id = `ci-${item.id}`;
+      row.style.animationDelay = `${idx * 0.07}s`;
+      row.innerHTML = `
+        <div class="item-thumb">${renderMiniSVG(item)}</div>
+        <div class="item-info">
+          <div class="item-name">${item.name}</div>
+          <div class="item-variant">${item.canvasLabel} · ${item.threadLabel}</div>
+          <div class="qty-row">
+            <button class="qty-btn" onclick="changeQty('${item.id}',-1)">−</button>
+            <div class="qty-display" id="qty-${item.id}">${item.qty}</div>
+            <button class="qty-btn" onclick="changeQty('${item.id}',1)">+</button>
+          </div>
+        </div>
+        <div class="item-right">
+          <span class="item-price">₹${(item.price * item.qty).toLocaleString('en-IN')}</span>
+          <button class="item-remove" onclick="removeItem('${item.id}')">Remove</button>
+        </div>
+      `;
+      list.appendChild(row);
+    });
+  }
+
+  renderCouponState();
+  renderSummary();
+}
+
+/* ════════════════════════════════════
+   QTY / REMOVE
+════════════════════════════════════ */
+function changeQty(id, delta) {
+  const item = CART.items.find(i => i.id === id);
+  if (!item) return;
+  CART.updateQty(id, item.qty + delta);
+  // Update qty display without full re-render
+  const qEl = document.getElementById(`qty-${id}`);
+  if (qEl) {
+    const newItem = CART.items.find(i => i.id === id);
+    if (!newItem) { renderCart(); return; }
+    qEl.textContent = newItem.qty;
+    qEl.style.animation = 'none'; qEl.offsetHeight;
+    qEl.style.animation = 'totalPop .3s cubic-bezier(.23,1,.32,1)';
+  } else {
+    renderCart();
+  }
+  renderSummary();
+}
+
+function removeItem(id) {
+  const row = document.getElementById(`ci-${id}`);
+  if (row) {
+    row.classList.add('removing');
+    setTimeout(() => { CART.remove(id); renderCart(); }, 480);
+  } else {
+    CART.remove(id); renderCart();
+  }
+}
+
+/* ════════════════════════════════════
+   COUPON
+════════════════════════════════════ */
+function applyCoupon() {
+  const code = document.getElementById('couponInput').value;
+  const result = CART.applyCoupon(code);
+  const msg = document.getElementById('couponMsg');
+  msg.textContent = result.msg;
+  msg.className   = 'coupon-msg ' + (result.ok ? 'ok' : 'err');
+  if (result.ok) {
+    document.getElementById('couponInput').value = '';
+    renderCouponState();
+    renderSummary();
+    playStampAnimation();
+  }
+}
+
+function removeCoupon() {
+  CART.removeCoupon();
+  renderCouponState();
+  renderSummary();
+}
+
+function renderCouponState() {
+  const c = CART.coupon;
+  const inputArea = document.getElementById('couponInputArea');
+  const tagArea   = document.getElementById('couponTagArea');
+  const tagText   = document.getElementById('couponTagText');
+  if (c) {
+    inputArea.style.display = 'none';
+    tagArea.style.display   = '';
+    tagText.textContent     = `${c.code} — ${c.label}`;
+    // Show free gift icon if applicable
+    if (c.type === 'freegift') {
+      document.getElementById('giftPriceTag').textContent = 'FREE! 🎁';
+    }
+  } else {
+    inputArea.style.display = '';
+    tagArea.style.display   = 'none';
+    document.getElementById('giftPriceTag').textContent = '+₹49';
+    document.getElementById('couponMsg').textContent    = '';
+  }
+}
+
+/* ── STAMP ANIMATION ── */
+function playStampAnimation() {
+  const overlay = document.getElementById('stampOverlay');
+  const seal    = document.getElementById('stampSeal');
+  overlay.classList.add('stamping');
+  seal.classList.add('stamping');
+  setTimeout(() => {
+    overlay.classList.remove('stamping');
+    seal.classList.remove('stamping');
+  }, 900);
+}
+
+/* ════════════════════════════════════
+   GIFT WRAP
+════════════════════════════════════ */
+let giftOpen = false;
+
+function toggleGift() {
+  giftOpen = !giftOpen;
+  const panel   = document.getElementById('giftPanel');
+  const toggle  = document.getElementById('giftToggle');
+  const iconWrap= document.getElementById('giftIconWrap');
+
+  panel.classList.toggle('open', giftOpen);
+  toggle.classList.toggle('active', giftOpen);
+
+  // Animate icon
+  iconWrap.style.transform = giftOpen ? 'scale(1.3) rotate(-15deg)' : '';
+  setTimeout(() => { iconWrap.style.transform = ''; }, 400);
+
+  if (!giftOpen) {
+    CART.setGiftWrap(null);
+    renderSummary();
+  } else {
+    // Trigger ribbon draw
+    updateGiftPreview();
+  }
+}
+
+function updateGiftPreview() {
+  const to  = document.getElementById('giftTo').value.trim();
+  const msg = document.getElementById('giftMsg').value.trim();
+  const from= document.getElementById('giftFrom').value.trim();
+
+  document.getElementById('previewTo').textContent   = `To: ${to || '...'}`;
+  document.getElementById('previewMsg').innerHTML    = msg
+    ? msg.replace(/\n/g,'<br>')
+    : `<em style="opacity:.4">Your message will appear here ✦</em>`;
+  document.getElementById('previewFrom').textContent = `From: ${from || '...'}`;
+
+  if (giftOpen && (to || msg || from)) {
+    CART.setGiftWrap({ to, from, message: msg });
+    renderSummary();
+  }
+}
+
+/* ════════════════════════════════════
+   SUMMARY
+════════════════════════════════════ */
+function renderSummary() {
+  const sub      = CART.subtotal();
+  const disc     = CART.discount();
+  const gift     = CART.giftWrapCost();
+  const ship     = CART.shipping();
+  const tot      = CART.total();
+  const FREE     = CART.SHIPPING_FREE_ABOVE;
+
+  document.getElementById('sumSubtotal').textContent  = `₹${sub.toLocaleString('en-IN')}`;
+  document.getElementById('sumShipping').textContent  = ship === 0 ? 'FREE 🎉' : `₹${ship}`;
+
+  // Discount row
+  const discRow = document.getElementById('sumDiscountRow');
+  if (disc > 0) {
+    discRow.style.display = '';
+    document.getElementById('sumDiscountLabel').textContent = `${CART.coupon?.code || 'Discount'}`;
+    document.getElementById('sumDiscount').textContent = `-₹${disc.toLocaleString('en-IN')}`;
+  } else {
+    discRow.style.display = 'none';
+  }
+
+  // Gift row
+  const giftRow = document.getElementById('sumGiftRow');
+  if (gift > 0) {
+    giftRow.style.display = '';
+    document.getElementById('sumGift').textContent = `+₹${gift}`;
+  } else if (CART.giftWrap && CART.coupon?.type === 'freegift') {
+    giftRow.style.display = '';
+    document.getElementById('sumGift').textContent = 'FREE 🎁';
+  } else {
+    giftRow.style.display = 'none';
+  }
+
+  // Total with pop animation
+  const totalEl = document.getElementById('sumTotal');
+  totalEl.textContent = `₹${tot.toLocaleString('en-IN')}`;
+  totalEl.classList.remove('update');
+  void totalEl.offsetWidth;
+  totalEl.classList.add('update');
+
+  // Free shipping bar
+  const afterDiscount = sub - disc;
+  const pct = Math.min(100, Math.round((afterDiscount / FREE) * 100));
+  document.getElementById('shippingBarFill').style.width = pct + '%';
+  const remaining = FREE - afterDiscount;
+  document.getElementById('shippingBarLabel').textContent =
+    ship === 0
+      ? '🎉 Free shipping unlocked!'
+      : `Add ₹${remaining} more for free shipping`;
+}
+
+/* ════════════════════════════════════
+   CHECKOUT
+════════════════════════════════════ */
+function handleCheckout() {
+  const btn = document.getElementById('checkoutBtn');
+  // If Shopify connected — redirect to cart checkout URL
+  if (typeof SHOPIFY_CONFIG !== 'undefined' && SHOPIFY_CONFIG.connected) {
+    const url = localStorage.getItem('ttbc_checkout_url');
+    if (url) { window.location.href = url; return; }
+  }
+  // Otherwise: show coming soon
+  btn.textContent = 'Setting up checkout... 🧵';
+  setTimeout(() => {
+    btn.textContent = 'Proceed to Checkout ✦';
+    window.location.href = 'waitlist.html';
+  }, 1200);
+}
+
+/* ════════════════════════════════════
+   INIT
+════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', () => {
+  renderCart();
+
+  // Restore gift state if any
+  if (CART.giftWrap) {
+    giftOpen = true;
+    document.getElementById('giftPanel').classList.add('open');
+    document.getElementById('giftToggle').classList.add('active');
+    if (CART.giftWrap.to)      document.getElementById('giftTo').value   = CART.giftWrap.to;
+    if (CART.giftWrap.from)    document.getElementById('giftFrom').value  = CART.giftWrap.from;
+    if (CART.giftWrap.message) document.getElementById('giftMsg').value   = CART.giftWrap.message;
+    updateGiftPreview();
+  }
+});
+</script>
+</body>
+</html>
