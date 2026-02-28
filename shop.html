@@ -425,6 +425,32 @@ footer p { font-size: 11px; color: rgba(242,237,224,.28); }
 .reveal.in { opacity: 1; transform: none; }
 
 /* ── RESPONSIVE ── */
+
+/* Cart nav button */
+.nav-cart-btn{
+  position:relative; background:var(--brown);
+  border:2px solid var(--brown);
+  outline:2px dashed rgba(242,237,224,.3); outline-offset:3px;
+  padding:8px 18px;
+  font-family:'Rye',serif; font-size:11px;
+  letter-spacing:1.5px; color:var(--cream);
+  cursor:pointer; transition:background .2s;
+  display:flex; align-items:center; gap:8px;
+}
+.nav-cart-btn:hover{background:var(--terracotta)}
+.cart-badge{
+  display:inline-flex; align-items:center; justify-content:center;
+  width:18px; height:18px; border-radius:50%;
+  background:var(--gold); color:var(--brown);
+  font-family:'Rye',serif; font-size:9px;
+  font-weight:700; line-height:1;
+  transition:transform .3s cubic-bezier(.23,1,.32,1);
+}
+.cart-badge.bump{animation:badgeBump .4s cubic-bezier(.23,1,.32,1)}
+@keyframes badgeBump{
+  0%{transform:scale(1)} 40%{transform:scale(1.5) rotate(-10deg)} 100%{transform:scale(1)}
+}
+
 @media (max-width: 1100px) {
   .products-grid { grid-template-columns: repeat(3, 1fr); }
 }
@@ -458,6 +484,12 @@ footer p { font-size: 11px; color: rgba(242,237,224,.28); }
     <li><a href="shop.html" class="active">Shop</a></li>
     <li><a href="index.html#story">Our Story</a></li>
     <li><a href="waitlist.html">Waitlist</a></li>
+    <li>
+      <button class="nav-cart-btn" id="navCartBtn" onclick="window.location='cart.html'">
+        🧵 Bag
+        <span class="cart-badge" id="navCartBadge">0</span>
+      </button>
+    </li>
   </ul>
   <button class="hamburger" id="hamburger" aria-label="Open menu" onclick="toggleDrawer()">
     <span></span><span></span><span></span>
@@ -538,6 +570,7 @@ footer p { font-size: 11px; color: rgba(242,237,224,.28); }
 </footer>
 
 <script src="products.js"></script>
+<script src="cart.js"></script>
 <script>
 /* ── Cursor ── */
 const needle = document.getElementById('needle');
@@ -792,6 +825,115 @@ function showToast(msg) {
   toastTimer = setTimeout(() => toast.classList.remove('show'), 2800);
 }
 
+/* ── Add to Cart with flying bag animation ── */
+let toastTimer;
+
+function addToCart(btn, productId) {
+  const product = TTBC_PRODUCTS.find(p => p.id === productId);
+  if (!product || !product.inStock) return;
+
+  // Add to CART engine
+  const added = CART.add(productId);
+  if (!added) return;
+
+  // Button feedback
+  btn.classList.add('added');
+  btn.textContent = '✓';
+  setTimeout(()=>{ btn.classList.remove('added'); btn.textContent='+'; }, 2000);
+
+  // Flying bag animation
+  flyBagToCart(btn);
+
+  // Update nav badge
+  updateNavBadge();
+  showToast(`🧵 "${product.shortName}" added!`);
+}
+
+function flyBagToCart(fromBtn) {
+  const cartBtn = document.getElementById('navCartBtn');
+  if (!cartBtn || window.innerWidth < 769) {
+    // On mobile, just bump badge
+    updateNavBadge(); return;
+  }
+
+  // Create flying emoji
+  const fromRect = fromBtn.getBoundingClientRect();
+  const toRect   = cartBtn.getBoundingClientRect();
+
+  const flyer = document.createElement('div');
+  flyer.textContent = '🛍️';
+  flyer.style.cssText = `
+    position:fixed;
+    left:${fromRect.left + fromRect.width/2 - 16}px;
+    top:${fromRect.top + fromRect.height/2 - 16}px;
+    font-size:32px; z-index:9999;
+    pointer-events:none;
+    transition:none;
+    will-change:transform,opacity;
+  `;
+  document.body.appendChild(flyer);
+
+  // Draw thread trail on canvas
+  drawThreadTrail(
+    fromRect.left + fromRect.width/2,
+    fromRect.top + fromRect.height/2,
+    toRect.left + toRect.width/2,
+    toRect.top + toRect.height/2
+  );
+
+  const dx = (toRect.left + toRect.width/2) - (fromRect.left + fromRect.width/2);
+  const dy = (toRect.top  + toRect.height/2)- (fromRect.top  + fromRect.height/2);
+
+  // Animate via WAAPI
+  flyer.animate([
+    { transform:'scale(1) rotate(0deg)',   opacity:1, offset:0 },
+    { transform:'scale(1.2) rotate(-15deg) translateY(-30px)', opacity:1, offset:.3 },
+    { transform:`translate(${dx}px,${dy}px) scale(.35) rotate(20deg)`, opacity:0, offset:1 },
+  ], { duration:650, easing:'cubic-bezier(0.23,1,0.32,1)', fill:'forwards' }).onfinish = () => {
+    flyer.remove();
+    // Badge bump
+    const badge = document.getElementById('navCartBadge');
+    if (badge) { badge.classList.remove('bump'); void badge.offsetWidth; badge.classList.add('bump'); }
+  };
+}
+
+function drawThreadTrail(x1,y1,x2,y2) {
+  const canvas = document.getElementById('threadTrailCanvas');
+  if (!canvas) return;
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+  const ctx = canvas.getContext('2d');
+  canvas.classList.add('visible');
+
+  let progress = 0;
+  const dur = 600;
+  const start = performance.now();
+
+  function step(now) {
+    progress = Math.min((now - start) / dur, 1);
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.beginPath();
+    ctx.setLineDash([8,6]);
+    ctx.strokeStyle = `rgba(196,106,60,${0.6 * (1-progress)})`;
+    ctx.lineWidth   = 2;
+    ctx.moveTo(x1,y1);
+    const cx = x1; const cy = y2;
+    const px = x1 + (x2-x1)*progress;
+    const py = y1 + (y2-y1)*progress;
+    ctx.quadraticCurveTo(cx, cy, px, py);
+    ctx.stroke();
+    if (progress < 1) requestAnimationFrame(step);
+    else { canvas.classList.remove('visible'); ctx.clearRect(0,0,canvas.width,canvas.height); }
+  }
+  requestAnimationFrame(step);
+}
+
+function updateCartBadge() { updateNavBadge(); }
+function updateNavBadge() {
+  const badge = document.getElementById('navCartBadge');
+  if (badge) badge.textContent = CART.itemCount();
+}
+
 /* ── Wishlist ── */
 function toggleWish(btn) {
   const loved = btn.classList.toggle('loved');
@@ -813,7 +955,9 @@ if (t) t.innerHTML += t.innerHTML;
 /* ── INIT ── */
 document.addEventListener('DOMContentLoaded', () => {
   renderProducts(TTBC_PRODUCTS);
+  updateNavBadge();
 });
 </script>
+<canvas id="threadTrailCanvas" style="position:fixed;inset:0;pointer-events:none;z-index:8999;opacity:0;transition:opacity .3s"></canvas>
 </body>
 </html>
