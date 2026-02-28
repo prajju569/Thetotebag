@@ -569,23 +569,36 @@ footer p { font-size: 11px; color: rgba(242,237,224,.28); }
   </div>
 </footer>
 
+<canvas id="threadTrailCanvas" style="position:fixed;inset:0;pointer-events:none;z-index:8999;opacity:0;transition:opacity .3s"></canvas>
+
 <script src="products.js"></script>
 <script src="cart.js"></script>
 <script>
-/* ── Cursor ── */
-const needle = document.getElementById('needle');
+/* ════════════════════════════════════
+   CURSOR
+════════════════════════════════════ */
+const needleEl = document.getElementById('needle');
 const threadEl = document.getElementById('threadCursor');
 let mx=0,my=0,tx=0,ty=0;
-document.addEventListener('mousemove',e=>{ mx=e.clientX; my=e.clientY; needle.style.transform=`translate(${mx-2}px,${my}px) rotate(30deg)`; });
-(function loop(){ tx+=(mx-tx)*.1; ty+=(my-ty)*.1; threadEl.style.transform=`translate(${tx-14}px,${ty-14}px)`; requestAnimationFrame(loop); })();
+document.addEventListener('mousemove',e=>{
+  mx=e.clientX; my=e.clientY;
+  needleEl.style.transform=`translate(${mx-2}px,${my}px) rotate(30deg)`;
+});
+(function loop(){
+  tx+=(mx-tx)*.1; ty+=(my-ty)*.1;
+  threadEl.style.transform=`translate(${tx-14}px,${ty-14}px)`;
+  requestAnimationFrame(loop);
+})();
 document.querySelectorAll('a,button').forEach(el=>{
-  el.addEventListener('mouseenter',()=>{ threadEl.style.width='50px'; threadEl.style.height='50px'; threadEl.style.borderColor='var(--gold)'; threadEl.style.opacity='.8'; });
-  el.addEventListener('mouseleave',()=>{ threadEl.style.width='28px'; threadEl.style.height='28px'; threadEl.style.borderColor='var(--terracotta)'; threadEl.style.opacity='.55'; });
+  el.addEventListener('mouseenter',()=>{threadEl.style.width='50px';threadEl.style.height='50px';threadEl.style.borderColor='var(--gold)';threadEl.style.opacity='.8';});
+  el.addEventListener('mouseleave',()=>{threadEl.style.width='28px';threadEl.style.height='28px';threadEl.style.borderColor='var(--terracotta)';threadEl.style.opacity='.55';});
 });
 
-/* ── Hamburger ── */
+/* ════════════════════════════════════
+   HAMBURGER
+════════════════════════════════════ */
 function toggleDrawer(){
-  const d=document.getElementById('mobileDrawer'), b=document.getElementById('hamburger');
+  const d=document.getElementById('mobileDrawer'),b=document.getElementById('hamburger');
   const open=d.classList.contains('open');
   d.classList.toggle('open',!open); b.classList.toggle('open',!open);
   document.body.classList.toggle('no-scroll',!open);
@@ -597,84 +610,78 @@ function closeDrawer(){
 }
 document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeDrawer(); });
 
-/* ════════════════════════════════════════
+/* ════════════════════════════════════
    BADGE CONFIG
-════════════════════════════════════════ */
+════════════════════════════════════ */
 const BADGE_CLASSES = {
-  new:     'badge-new',
-  popular: 'badge-popular',
-  limited: 'badge-limited',
-  collab:  'badge-collab',
-  coming:  'badge-coming',
-  '':      ''
+  new:'badge-new', popular:'badge-popular',
+  limited:'badge-limited', collab:'badge-collab',
+  coming:'badge-coming', '':''
 };
 
-/* ════════════════════════════════════════
-   RENDER A SINGLE BAG SVG from product data
-════════════════════════════════════════ */
-function renderBagSVG(p) {
-  // Pick text color based on canvas brightness
-  const darkCanvases = ['#7B3F1A','#3D1F0D','#0D0D0D','#4A7C8E','#5A6B3A','#C46A3C','#C9973A'];
-  const textColor = darkCanvases.includes(p.canvasColor) ? '#F2EDE0' : '#3D1F0D';
-  const innerStroke = darkCanvases.includes(p.canvasColor) ? 'rgba(255,255,255,0.2)' : '#3D1F0D';
-  const innerOpacity = darkCanvases.includes(p.canvasColor) ? '1' : '0.3';
+/* ════════════════════════════════════
+   RENDER BAG SVG
+════════════════════════════════════ */
+function escX(str){
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
 
-  const line1 = p.line1 ? `<text x="100" y="130" font-family="Georgia" font-size="10" fill="${textColor}" text-anchor="middle" font-style="italic">${escX(p.line1)}</text>` : '';
-  const line2 = p.line2 ? `<text x="100" y="148" font-family="Georgia" font-size="10" font-weight="700" fill="${textColor}" text-anchor="middle">${escX(p.line2)}</text>` : '';
-  const line3 = p.line3 ? `<text x="100" y="168" font-family="Georgia" font-size="9" fill="${p.line3Color || textColor}" text-anchor="middle">${escX(p.line3)}</text>` : '';
-
+function renderBagSVG(p){
+  const dark=['#7B3F1A','#3D1F0D','#0D0D0D','#4A7C8E','#5A6B3A','#C46A3C','#C9973A'];
+  const tc = dark.includes(p.canvasColor) ? '#F2EDE0' : '#3D1F0D';
+  const is = dark.includes(p.canvasColor) ? 'rgba(255,255,255,0.2)' : '#3D1F0D';
+  const io = dark.includes(p.canvasColor) ? '1' : '0.3';
+  const l1 = p.line1 ? `<text x="100" y="130" font-family="Georgia" font-size="10" fill="${tc}" text-anchor="middle" font-style="italic">${escX(p.line1)}</text>` : '';
+  const l2 = p.line2 ? `<text x="100" y="148" font-family="Georgia" font-size="10" font-weight="700" fill="${tc}" text-anchor="middle">${escX(p.line2)}</text>` : '';
+  const l3 = p.line3 ? `<text x="100" y="168" font-family="Georgia" font-size="9" fill="${p.line3Color||tc}" text-anchor="middle">${escX(p.line3)}</text>` : '';
   return `<svg viewBox="0 0 200 240" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M58 62 Q58 22 78 22 Q98 22 98 62" stroke="#3D1F0D" stroke-width="5" fill="none" stroke-linecap="round" stroke-dasharray="5 3"/>
     <path d="M102 62 Q102 28 122 28 Q142 28 142 62" stroke="#3D1F0D" stroke-width="5" fill="none" stroke-linecap="round" stroke-dasharray="5 3"/>
     <rect x="32" y="62" width="136" height="154" rx="5" fill="${p.canvasColor}" stroke="#3D1F0D" stroke-width="2.5"/>
-    <rect x="40" y="70" width="120" height="138" rx="3" fill="none" stroke="${innerStroke}" stroke-width="1" stroke-dasharray="5 4" opacity="${innerOpacity}"/>
-    ${line1}${line2}${line3}
-    <text x="100" y="188" font-family="Georgia" font-size="8" fill="${p.line3Color || textColor}" text-anchor="middle" opacity="0.4">✦ TTBC ✦</text>
+    <rect x="40" y="70" width="120" height="138" rx="3" fill="none" stroke="${is}" stroke-width="1" stroke-dasharray="5 4" opacity="${io}"/>
+    ${l1}${l2}${l3}
+    <text x="100" y="188" font-family="Georgia" font-size="8" fill="${p.line3Color||tc}" text-anchor="middle" opacity="0.4">✦ TTBC ✦</text>
   </svg>`;
 }
 
-function escX(str) {
-  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
-
-/* ════════════════════════════════════════
-   RENDER ALL PRODUCT CARDS
-════════════════════════════════════════ */
-function renderProducts(products) {
+/* ════════════════════════════════════
+   RENDER PRODUCT CARDS
+════════════════════════════════════ */
+function renderProducts(products){
   const grid = document.getElementById('productsGrid');
-  const emptyState = document.getElementById('emptyState');
+  const empty = document.getElementById('emptyState');
+  grid.querySelectorAll('.product-card').forEach(c=>c.remove());
 
-  // Clear existing cards (keep empty state)
-  grid.querySelectorAll('.product-card').forEach(c => c.remove());
-
-  if (products.length === 0) {
-    emptyState.classList.add('show');
+  if(!products || products.length===0){
+    empty.classList.add('show');
+    updateFilterCount(0);
     return;
   }
-  emptyState.classList.remove('show');
+  empty.classList.remove('show');
 
-  products.forEach(p => {
+  products.forEach((p,idx)=>{
     const card = document.createElement('div');
     card.className = 'product-card reveal';
     card.setAttribute('data-id', p.id);
     card.setAttribute('data-tags', p.tags.join(' '));
-    card.setAttribute('data-price', p.price || 0);
 
-    const badgeHTML = p.badge ? `<div class="card-badge ${BADGE_CLASSES[p.badge] || ''}">${p.badgeText}</div>` : '';
+    const badgeHTML = p.badge
+      ? `<div class="card-badge ${BADGE_CLASSES[p.badge]||''}">${p.badgeText}</div>` : '';
+
+    const cur = (typeof SITE_CONFIG!=='undefined') ? SITE_CONFIG.currency : '₹';
     const priceHTML = p.price
-      ? `<span class="card-price">${SITE_CONFIG.currency}${p.price}</span>${p.mrp && p.mrp > p.price ? `<span class="card-mrp">${SITE_CONFIG.currency}${p.mrp}</span>` : ''}`
+      ? `<span class="card-price">${cur}${p.price}</span>${p.mrp&&p.mrp>p.price?`<span class="card-mrp">${cur}${p.mrp}</span>`:''}`
       : `<span class="card-price">???</span>`;
 
     const actionHTML = p.inStock
       ? `<button class="card-add" onclick="addToCart(this,'${p.id}')">+</button>`
-      : `<a href="${p.shopifyUrl || 'waitlist.html'}" style="font-family:'Rye',serif;font-size:10px;letter-spacing:1px;color:var(--terracotta);text-decoration:none;border-bottom:1.5px dashed var(--terracotta);padding-bottom:2px;">Vote →</a>`;
+      : `<a href="${p.shopifyUrl||'waitlist.html'}" style="font-family:'Rye',serif;font-size:10px;letter-spacing:1px;color:var(--terracotta);text-decoration:none;border-bottom:1.5px dashed var(--terracotta);padding-bottom:2px;">Vote →</a>`;
 
-    const comingOverlay = !p.inStock ? `<div class="coming-overlay"><span>Coming Soon</span></div>` : '';
+    const comingOverlay = !p.inStock
+      ? `<div class="coming-overlay"><span>Coming Soon</span></div>` : '';
 
-    // Low stock warning
-    const lowStock = p.inStock && p.quantity <= 5
-      ? `<div style="font-family:'Lora',serif;font-size:10px;font-style:italic;color:var(--terracotta);margin-bottom:6px;">Only ${p.quantity} left!</div>`
-      : '';
+    const lowStock = p.inStock && p.quantity<=5
+      ? `<div style="font-family:'Lora',serif;font-size:10px;font-style:italic;color:var(--terracotta);margin-bottom:6px;">Only ${p.quantity} left!</div>` : '';
 
     card.innerHTML = `
       ${badgeHTML}
@@ -683,281 +690,163 @@ function renderProducts(products) {
       <div class="card-name">${p.name}</div>
       <div class="card-variant">${p.canvasLabel} · ${p.threadLabel}</div>
       ${lowStock}
-      <div class="card-footer">
-        <div>${priceHTML}</div>
-        ${actionHTML}
-      </div>
+      <div class="card-footer"><div>${priceHTML}</div>${actionHTML}</div>
       ${comingOverlay}
     `;
-
-    grid.insertBefore(card, emptyState);
+    grid.insertBefore(card, empty);
   });
 
-  // Re-attach reveal observer to new cards
   attachRevealObserver();
   updateFilterCount(products.length);
 }
 
-/* ════════════════════════════════════════
+/* ════════════════════════════════════
    FILTER
-════════════════════════════════════════ */
+════════════════════════════════════ */
 let activeFilter = 'all';
 
-function filterProducts(tag, btn) {
+function filterProducts(tag, btn){
   activeFilter = tag;
-  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
-
   let filtered;
-  if (tag === 'all') {
-    filtered = TTBC_PRODUCTS;
-  } else if (tag === 'under599') {
-    filtered = TTBC_PRODUCTS.filter(p => p.price && p.price <= 599);
-  } else {
-    filtered = TTBC_PRODUCTS.filter(p => p.tags.includes(tag));
-  }
-
+  if(tag==='all')          filtered = TTBC_PRODUCTS;
+  else if(tag==='under599') filtered = TTBC_PRODUCTS.filter(p=>p.price&&p.price<=599);
+  else                      filtered = TTBC_PRODUCTS.filter(p=>p.tags.includes(tag));
   renderProducts(filtered);
 }
 
-function updateFilterCount(n) {
-  const total = TTBC_PRODUCTS.length;
-  document.getElementById('filterCount').textContent =
-    activeFilter === 'all' ? `Showing all ${total}` : `Showing ${n} of ${total}`;
-  document.getElementById('shopCountBadge').textContent = `${total} Designs ✦ More Coming`;
+function updateFilterCount(n){
+  const total = TTBC_PRODUCTS ? TTBC_PRODUCTS.length : 0;
+  const fc = document.getElementById('filterCount');
+  const sb = document.getElementById('shopCountBadge');
+  if(fc) fc.textContent = activeFilter==='all' ? `Showing all ${total}` : `Showing ${n} of ${total}`;
+  if(sb) sb.textContent = `${total} Designs ✦ More Coming`;
 }
 
-/* ════════════════════════════════════════
-   CART — works in 2 modes:
-   Mode 1 (now):    redirect to Shopify product page
-   Mode 2 (later):  Shopify Storefront API add to cart
-════════════════════════════════════════ */
-let cartItems = [];
+/* ════════════════════════════════════
+   ADD TO CART + FLYING BAG
+════════════════════════════════════ */
 let toastTimer;
 
-function addToCart(btn, productId) {
-  const product = TTBC_PRODUCTS.find(p => p.id === productId);
-  if (!product) return;
+function addToCart(btn, productId){
+  const product = TTBC_PRODUCTS.find(p=>p.id===productId);
+  if(!product||!product.inStock) return;
 
-  // MODE 2: If Shopify API is connected, use it
-  if (SHOPIFY_CONFIG.connected && product.shopifyVariantId) {
-    addToShopifyCart(product, btn);
-    return;
+  // Add to CART engine (from cart.js)
+  if(typeof CART!=='undefined'){
+    CART.add(productId);
   }
-
-  // MODE 1: If Shopify URL exists, open it
-  if (product.shopifyUrl) {
-    window.open(product.shopifyUrl, '_blank');
-    return;
-  }
-
-  // DEFAULT: Add to local cart + show toast
-  const existing = cartItems.find(i => i.id === productId);
-  if (existing) {
-    existing.qty++;
-  } else {
-    cartItems.push({ id: productId, name: product.name, price: product.price, qty: 1 });
-  }
-
-  btn.classList.add('added');
-  btn.textContent = '✓';
-  setTimeout(() => { btn.classList.remove('added'); btn.textContent = '+'; }, 2000);
-
-  showToast(`🧵 "${product.shortName}" added!`);
-  updateCartBadge();
-}
-
-// Shopify Storefront API cart (activated when SHOPIFY_CONFIG.connected = true)
-async function addToShopifyCart(product, btn) {
-  try {
-    btn.textContent = '...';
-    const res = await fetch(`https://${SHOPIFY_CONFIG.domain}/api/2024-01/graphql.json`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Shopify-Storefront-Access-Token': SHOPIFY_CONFIG.storefrontToken,
-      },
-      body: JSON.stringify({
-        query: `mutation cartLinesAdd($cartId: ID!, $lines: [CartLineInput!]!) {
-          cartLinesAdd(cartId: $cartId, lines: $lines) {
-            cart { id checkoutUrl totalQuantity }
-          }
-        }`,
-        variables: {
-          cartId: getOrCreateCartId(),
-          lines: [{ quantity: 1, merchandiseId: `gid://shopify/ProductVariant/${product.shopifyVariantId}` }]
-        }
-      })
-    });
-    const data = await res.json();
-    if (data.data?.cartLinesAdd?.cart) {
-      const cart = data.data.cartLinesAdd.cart;
-      localStorage.setItem('ttbc_cart_id', cart.id);
-      localStorage.setItem('ttbc_checkout_url', cart.checkoutUrl);
-      btn.classList.add('added'); btn.textContent = '✓';
-      setTimeout(() => { btn.classList.remove('added'); btn.textContent = '+'; }, 2000);
-      showToast(`🧵 "${product.shortName}" added!`);
-      updateCartBadge(cart.totalQuantity);
-    }
-  } catch(e) {
-    console.error('Shopify cart error:', e);
-    btn.textContent = '+';
-  }
-}
-
-function getOrCreateCartId() {
-  return localStorage.getItem('ttbc_cart_id') || '';
-}
-
-function updateCartBadge(count) {
-  const total = count !== undefined ? count : cartItems.reduce((a,i) => a + i.qty, 0);
-  // Update any cart icon badge you add to nav later
-  const badge = document.getElementById('cartBadge');
-  if (badge) { badge.textContent = total; badge.style.display = total > 0 ? 'flex' : 'none'; }
-}
-
-/* ── Toast ── */
-function showToast(msg) {
-  const toast = document.getElementById('cartToast');
-  toast.textContent = msg;
-  toast.classList.add('show');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => toast.classList.remove('show'), 2800);
-}
-
-/* ── Add to Cart with flying bag animation ── */
-let toastTimer;
-
-function addToCart(btn, productId) {
-  const product = TTBC_PRODUCTS.find(p => p.id === productId);
-  if (!product || !product.inStock) return;
-
-  // Add to CART engine
-  const added = CART.add(productId);
-  if (!added) return;
 
   // Button feedback
   btn.classList.add('added');
-  btn.textContent = '✓';
+  btn.textContent='✓';
   setTimeout(()=>{ btn.classList.remove('added'); btn.textContent='+'; }, 2000);
 
   // Flying bag animation
   flyBagToCart(btn);
-
-  // Update nav badge
   updateNavBadge();
   showToast(`🧵 "${product.shortName}" added!`);
 }
 
-function flyBagToCart(fromBtn) {
+function flyBagToCart(fromBtn){
   const cartBtn = document.getElementById('navCartBtn');
-  if (!cartBtn || window.innerWidth < 769) {
-    // On mobile, just bump badge
-    updateNavBadge(); return;
-  }
+  if(!cartBtn || window.innerWidth<769){ updateNavBadge(); return; }
 
-  // Create flying emoji
   const fromRect = fromBtn.getBoundingClientRect();
   const toRect   = cartBtn.getBoundingClientRect();
 
   const flyer = document.createElement('div');
-  flyer.textContent = '🛍️';
-  flyer.style.cssText = `
-    position:fixed;
-    left:${fromRect.left + fromRect.width/2 - 16}px;
-    top:${fromRect.top + fromRect.height/2 - 16}px;
-    font-size:32px; z-index:9999;
-    pointer-events:none;
-    transition:none;
-    will-change:transform,opacity;
-  `;
+  flyer.textContent='🛍️';
+  flyer.style.cssText=`position:fixed;left:${fromRect.left+fromRect.width/2-16}px;top:${fromRect.top+fromRect.height/2-16}px;font-size:32px;z-index:9999;pointer-events:none;`;
   document.body.appendChild(flyer);
 
-  // Draw thread trail on canvas
   drawThreadTrail(
-    fromRect.left + fromRect.width/2,
-    fromRect.top + fromRect.height/2,
-    toRect.left + toRect.width/2,
-    toRect.top + toRect.height/2
+    fromRect.left+fromRect.width/2, fromRect.top+fromRect.height/2,
+    toRect.left+toRect.width/2,     toRect.top+toRect.height/2
   );
 
-  const dx = (toRect.left + toRect.width/2) - (fromRect.left + fromRect.width/2);
-  const dy = (toRect.top  + toRect.height/2)- (fromRect.top  + fromRect.height/2);
+  const dx=(toRect.left+toRect.width/2)-(fromRect.left+fromRect.width/2);
+  const dy=(toRect.top+toRect.height/2)-(fromRect.top+fromRect.height/2);
 
-  // Animate via WAAPI
   flyer.animate([
-    { transform:'scale(1) rotate(0deg)',   opacity:1, offset:0 },
-    { transform:'scale(1.2) rotate(-15deg) translateY(-30px)', opacity:1, offset:.3 },
-    { transform:`translate(${dx}px,${dy}px) scale(.35) rotate(20deg)`, opacity:0, offset:1 },
-  ], { duration:650, easing:'cubic-bezier(0.23,1,0.32,1)', fill:'forwards' }).onfinish = () => {
+    {transform:'scale(1) rotate(0deg)',opacity:1,offset:0},
+    {transform:'scale(1.2) rotate(-15deg) translateY(-30px)',opacity:1,offset:.3},
+    {transform:`translate(${dx}px,${dy}px) scale(.3) rotate(20deg)`,opacity:0,offset:1},
+  ],{duration:650,easing:'cubic-bezier(0.23,1,0.32,1)',fill:'forwards'}).onfinish=()=>{
     flyer.remove();
-    // Badge bump
-    const badge = document.getElementById('navCartBadge');
-    if (badge) { badge.classList.remove('bump'); void badge.offsetWidth; badge.classList.add('bump'); }
+    const badge=document.getElementById('navCartBadge');
+    if(badge){badge.classList.remove('bump');void badge.offsetWidth;badge.classList.add('bump');}
   };
 }
 
-function drawThreadTrail(x1,y1,x2,y2) {
-  const canvas = document.getElementById('threadTrailCanvas');
-  if (!canvas) return;
-  canvas.width  = window.innerWidth;
-  canvas.height = window.innerHeight;
-  const ctx = canvas.getContext('2d');
-  canvas.classList.add('visible');
-
-  let progress = 0;
-  const dur = 600;
-  const start = performance.now();
-
-  function step(now) {
-    progress = Math.min((now - start) / dur, 1);
+function drawThreadTrail(x1,y1,x2,y2){
+  const canvas=document.getElementById('threadTrailCanvas');
+  if(!canvas) return;
+  canvas.width=window.innerWidth; canvas.height=window.innerHeight;
+  const ctx=canvas.getContext('2d');
+  canvas.style.opacity='1';
+  const start=performance.now();
+  function step(now){
+    const p=Math.min((now-start)/600,1);
     ctx.clearRect(0,0,canvas.width,canvas.height);
-    ctx.beginPath();
-    ctx.setLineDash([8,6]);
-    ctx.strokeStyle = `rgba(196,106,60,${0.6 * (1-progress)})`;
-    ctx.lineWidth   = 2;
+    ctx.beginPath(); ctx.setLineDash([8,6]);
+    ctx.strokeStyle=`rgba(196,106,60,${0.6*(1-p)})`; ctx.lineWidth=2;
     ctx.moveTo(x1,y1);
-    const cx = x1; const cy = y2;
-    const px = x1 + (x2-x1)*progress;
-    const py = y1 + (y2-y1)*progress;
-    ctx.quadraticCurveTo(cx, cy, px, py);
+    ctx.quadraticCurveTo(x1,y2, x1+(x2-x1)*p, y1+(y2-y1)*p);
     ctx.stroke();
-    if (progress < 1) requestAnimationFrame(step);
-    else { canvas.classList.remove('visible'); ctx.clearRect(0,0,canvas.width,canvas.height); }
+    if(p<1) requestAnimationFrame(step);
+    else{ canvas.style.opacity='0'; ctx.clearRect(0,0,canvas.width,canvas.height); }
   }
   requestAnimationFrame(step);
 }
 
-function updateCartBadge() { updateNavBadge(); }
-function updateNavBadge() {
-  const badge = document.getElementById('navCartBadge');
-  if (badge) badge.textContent = CART.itemCount();
+/* ════════════════════════════════════
+   NAV BADGE + TOAST + WISHLIST + REVEAL
+════════════════════════════════════ */
+function updateNavBadge(){
+  const badge=document.getElementById('navCartBadge');
+  if(!badge) return;
+  const count = (typeof CART!=='undefined') ? CART.itemCount() : 0;
+  badge.textContent=count;
 }
 
-/* ── Wishlist ── */
-function toggleWish(btn) {
-  const loved = btn.classList.toggle('loved');
-  btn.textContent = loved ? '❤️' : '🤍';
+function showToast(msg){
+  const toast=document.getElementById('cartToast');
+  if(!toast) return;
+  toast.textContent=msg;
+  toast.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>toast.classList.remove('show'),2800);
 }
 
-/* ── Scroll Reveal ── */
-function attachRevealObserver() {
-  const obs = new IntersectionObserver(entries => {
-    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); obs.unobserve(e.target); }});
-  }, { threshold: .08 });
-  document.querySelectorAll('.reveal:not(.in)').forEach(el => obs.observe(el));
+function toggleWish(btn){
+  const loved=btn.classList.toggle('loved');
+  btn.textContent=loved?'❤️':'🤍';
+}
+
+function attachRevealObserver(){
+  const obs=new IntersectionObserver(entries=>{
+    entries.forEach(e=>{ if(e.isIntersecting){e.target.classList.add('in');obs.unobserve(e.target);} });
+  },{threshold:.08});
+  document.querySelectorAll('.reveal:not(.in)').forEach(el=>obs.observe(el));
 }
 
 /* ── Marquee ── */
-const t = document.getElementById('marqueeTrack');
-if (t) t.innerHTML += t.innerHTML;
+const marqueeTrack=document.getElementById('marqueeTrack');
+if(marqueeTrack) marqueeTrack.innerHTML+=marqueeTrack.innerHTML;
 
-/* ── INIT ── */
-document.addEventListener('DOMContentLoaded', () => {
+/* ════════════════════════════════════
+   INIT — runs after DOM + scripts ready
+════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded',()=>{
+  if(typeof TTBC_PRODUCTS==='undefined'){
+    console.error('products.js not loaded!');
+    return;
+  }
   renderProducts(TTBC_PRODUCTS);
   updateNavBadge();
 });
 </script>
-<canvas id="threadTrailCanvas" style="position:fixed;inset:0;pointer-events:none;z-index:8999;opacity:0;transition:opacity .3s"></canvas>
 </body>
 </html>
