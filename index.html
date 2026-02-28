@@ -79,13 +79,14 @@ body::before {
 nav {
   position: fixed;
   top: 0; left: 0; right: 0;
-  z-index: 200;
-  padding: 18px 48px;
+  z-index: 400;
+  padding: 16px 48px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: rgba(242,237,224,0.88);
-  backdrop-filter: blur(10px);
+  background: rgba(242,237,224,0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-bottom: 2.5px dashed rgba(61,31,13,0.22);
 }
 .nav-logo {
@@ -95,6 +96,8 @@ nav {
   text-decoration: none;
   letter-spacing: 1px;
   line-height: 1.3;
+  z-index: 401;
+  position: relative;
 }
 .nav-links { display: flex; gap: 36px; list-style: none; }
 .nav-links a {
@@ -115,6 +118,105 @@ nav {
   transition: width 0.35s;
 }
 .nav-links a:hover::after { width: 100%; }
+
+/* ── HAMBURGER ── */
+.hamburger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  width: 38px; height: 38px;
+  background: none;
+  border: 2px dashed var(--brown);
+  padding: 8px 7px;
+  cursor: pointer;
+  z-index: 401;
+  position: relative;
+  transition: border-color 0.2s, background 0.2s;
+}
+.hamburger span {
+  display: block;
+  width: 100%; height: 2px;
+  background: var(--brown);
+  border-radius: 1px;
+  transition: transform 0.35s ease, opacity 0.25s ease, width 0.25s ease;
+  transform-origin: center;
+}
+.hamburger.open { background: var(--brown); border-style: solid; }
+.hamburger.open span { background: var(--cream); }
+.hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.hamburger.open span:nth-child(2) { opacity: 0; width: 0; }
+.hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+/* ── MOBILE FULL-SCREEN DRAWER ── */
+.mobile-drawer {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 399;
+  background: var(--cream);
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transform: translateX(100%);
+  transition: transform 0.4s cubic-bezier(0.23,1,0.32,1);
+  overflow: hidden;
+}
+.mobile-drawer::before {
+  content: '';
+  position: absolute; inset: 20px;
+  border: 2.5px dashed rgba(61,31,13,0.15);
+  pointer-events: none; z-index: 0;
+}
+.mobile-drawer.open { transform: translateX(0); }
+.mobile-drawer nav-drawer-inner {
+  position: relative; z-index: 2;
+}
+.mobile-drawer ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: 100vw;
+  position: relative; z-index: 2;
+}
+.mobile-drawer ul li {
+  border-bottom: 2px dashed rgba(61,31,13,0.15);
+}
+.mobile-drawer ul li:first-child { border-top: 2px dashed rgba(61,31,13,0.15); }
+.mobile-drawer ul a {
+  display: block;
+  font-family: 'Rye', serif;
+  font-size: clamp(22px, 7vw, 32px);
+  letter-spacing: 2px;
+  color: var(--brown);
+  text-decoration: none;
+  text-align: center;
+  padding: 24px 32px;
+  transition: background 0.2s, color 0.2s;
+  position: relative;
+}
+.mobile-drawer ul a:active,
+.mobile-drawer ul a:hover { background: var(--brown); color: var(--cream); }
+.drawer-tagline {
+  position: relative; z-index: 2;
+  margin-top: 48px;
+  font-family: 'Lora', serif;
+  font-size: 12px;
+  font-style: italic;
+  color: var(--brown-mid);
+  opacity: 0.45;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+@media (max-width: 768px) {
+  nav { padding: 14px 20px; }
+  .nav-links { display: none !important; }
+  .hamburger { display: flex; }
+  .mobile-drawer { display: flex; }
+  body.no-scroll { overflow: hidden; }
+}
 
 /* ── HERO ── */
 #hero { height: 550vh; position: relative; }
@@ -686,7 +788,6 @@ footer p { font-size: 11px; color: rgba(242,237,224,0.28); letter-spacing: 0.5px
 /* ── MOBILE ── */
 @media (max-width: 768px) {
   nav { padding: 14px 20px; }
-  .nav-links { display: none; }
   #story { grid-template-columns: 1fr; padding: 70px 22px; gap: 44px; }
   #shop { padding: 70px 18px; }
   .products-grid { grid-template-columns: 1fr; gap: 44px; }
@@ -707,13 +808,30 @@ footer p { font-size: 11px; color: rgba(242,237,224,0.28); letter-spacing: 0.5px
 
 <!-- NAV -->
 <nav>
-  <a href="#" class="nav-logo">The Tote<br>Bag Co.</a>
+  <a href="index.html" class="nav-logo">The Tote<br>Bag Co.</a>
   <ul class="nav-links">
-    <li><a href="#shop">Shop</a></li>
+    <li><a href="shop.html">Shop</a></li>
     <li><a href="#story">Our Story</a></li>
     <li><a href="waitlist.html">Waitlist</a></li>
   </ul>
+  <!-- Hamburger for mobile -->
+  <button class="hamburger" id="hamburger" aria-label="Open menu" onclick="toggleDrawer()">
+    <span></span>
+    <span></span>
+    <span></span>
+  </button>
 </nav>
+
+<!-- Mobile Full-Screen Drawer -->
+<div class="mobile-drawer" id="mobileDrawer">
+  <ul>
+    <li><a href="shop.html" onclick="closeDrawer()">Shop</a></li>
+    <li><a href="index.html#story" onclick="closeDrawer()">Our Story</a></li>
+    <li><a href="waitlist.html" onclick="closeDrawer()">Waitlist</a></li>
+    <li><a href="#feedback" onclick="closeDrawer()">Leave Feedback</a></li>
+  </ul>
+  <div class="drawer-tagline">✦ Stitch by Stitch ✦</div>
+</div>
 
 <!-- HERO -->
 <section id="hero">
@@ -1154,6 +1272,31 @@ function handleFeedback(e){
 /* ── Seamless marquee ── */
 const t=document.getElementById('marqueeTrack');
 t.innerHTML+=t.innerHTML;
+</script>
+
+<script>
+/* ── Hamburger / Drawer ── */
+function toggleDrawer() {
+  const drawer = document.getElementById('mobileDrawer');
+  const btn    = document.getElementById('hamburger');
+  const isOpen = drawer.classList.contains('open');
+  if (isOpen) {
+    drawer.classList.remove('open');
+    btn.classList.remove('open');
+    document.body.classList.remove('no-scroll');
+  } else {
+    drawer.classList.add('open');
+    btn.classList.add('open');
+    document.body.classList.add('no-scroll');
+  }
+}
+function closeDrawer() {
+  document.getElementById('mobileDrawer').classList.remove('open');
+  document.getElementById('hamburger').classList.remove('open');
+  document.body.classList.remove('no-scroll');
+}
+// Close drawer on ESC
+document.addEventListener('keydown', e => { if(e.key==='Escape') closeDrawer(); });
 </script>
 </body>
 </html>
